@@ -256,7 +256,6 @@ def build_premier_league_telemetry(setup_mode: str):
         lambda x: team_lookup.get(int(x), 0)
     )
 
-    # Pre-index balls and players by frame using fast numpy/tuple structures
     balls_df = (
         tracks[tracks["class_name"] == "ball"]
         .sort_values(["frame", "confidence"], ascending=[True, False])
@@ -276,7 +275,6 @@ def build_premier_league_telemetry(setup_mode: str):
             (int(r.track_id), float(r.foot_x), float(r.foot_y), int(r.team_id))
         )
 
-    # Pre-compute pass event records once
     pass_records = []
     for er in passes.itertuples():
         f_ev = int(er.frame)
@@ -564,7 +562,7 @@ def build_premier_league_telemetry(setup_mode: str):
     player_trails = {}
     sample_frames_list = list(range(1, max_frame + 1, 4)) + [max_frame]
 
-    # Pre-group player rows by track_id for O(1) lookup
+    empty_df = player_rows.iloc[0:0]
     p_rows_by_id = {int(tid): df for tid, df in player_rows.groupby("track_id")}
 
     for pid in active_id_list:
@@ -631,7 +629,6 @@ def build_premier_league_telemetry(setup_mode: str):
             "radar": [prog_rating, ret_rating, work_rating, drib_rating, pace_rating],
         }
 
-        # Fast trail extraction
         sub_trail = p_df[p_df["frame"] % 4 == 1]
         player_trails[str(pid)] = [
             [int(f_v), round(float(fx_v), 1), round(float(fy_v), 1)]
@@ -640,7 +637,6 @@ def build_premier_league_telemetry(setup_mode: str):
             )
         ]
 
-        # Vectorized cumulative arrays for O(1) binary search per sample frame
         p_frames_arr = p_df["frame"].to_numpy()
         cum_dist = np.cumsum(p_df["clean_step_px"].to_numpy()) * PX_TO_METERS
         cum_carry = np.cumsum(p_df["carry_step_px"].to_numpy()) * PX_TO_METERS
@@ -803,12 +799,6 @@ def run_matchmind_agent(
     azure_key: str,
     use_cloud_llm: bool = True,
 ) -> str:
-    """
-    Multi-Tool Agentic AI Orchestrator:
-    On initial page load (use_cloud_llm=False), returns the instant deterministic telemetry analysis in 0.001s
-    so the page never hangs waiting on an external network request.
-    When the user clicks an Agent button or submits a custom prompt (use_cloud_llm=True), calls Microsoft AI Foundry!
-    """
     p_tot = js_payload["player_totals"].get(
         str(selected_pid), list(js_payload["player_totals"].values())[0]
     )
@@ -1026,7 +1016,6 @@ selected_cloud_pid = st.sidebar.selectbox(
     format_func=lambda x: f"Player ID #{x} (Team {js_payload['player_totals'][str(x)]['team']})",
 )
 
-# Instant 0.001s initialization on startup (no network wait!)
 if "agent_response" not in st.session_state:
     st.session_state["agent_response"] = run_matchmind_agent(
         user_query=f"Provide a complete tactical breakdown of Player ID #{selected_cloud_pid}'s dribbles, passes, how Control vs. Chaos shifts during the match, and how to operate the MatchMind AI framework.",
