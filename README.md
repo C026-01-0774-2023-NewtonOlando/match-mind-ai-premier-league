@@ -16,3 +16,6 @@ MatchMind AI transforms raw football video and synthetic tracking telemetry into
 pip install -r requirements.txt
 python player_report_engine.py
 streamlit run app.py
+
+## 📜 License & Copyright
+© 2026 Newton Olando. All Rights Reserved. Unauthorized cloning, redistribution, or commercial use of this repository is strictly prohibited.
