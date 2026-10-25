@@ -1042,7 +1042,7 @@ if st.sidebar.button("⚡ Explain Player, Chaos & Guide", use_container_width=Tr
         )
 
 # ============================================================
-# ULTRA-BROADCAST HTML5 INTERACTIVE COMMAND CENTER
+# ULTRA-BROADCAST HTML5 INTERACTIVE COMMAND CENTER (PITCH-ONLY CROP)
 # ============================================================
 payload_json_str = json.dumps(js_payload)
 
@@ -1265,19 +1265,74 @@ html_component = f"""
     backdrop-filter: blur(16px);
   }}
 
+  /* ==============================================================
+     CINEMATIC 21:9 PITCH-ONLY CROP VIEWPORT
+     Crops out top stadium stands/ad-boards AND bottom dugouts/watermark
+     so ONLY the green pitch and players are visible!
+     ============================================================== */
   .video-shell {{
     position: relative;
-    border-radius: 10px;
+    width: 100%;
+    aspect-ratio: 2.35 / 1;
+    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid rgba(0, 255, 133, 0.35);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
-    background: #000;
+    border: 1px solid rgba(0, 255, 133, 0.42);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+    background: #0b2e13;
   }}
 
-  video {{
+  video#matchVideo {{
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Zooms into the green turf: pushes top stadium & bottom watermark completely out of frame */
+    transform: scale(1.38) translateY(-4.5%);
+    transform-origin: center center;
     display: block;
     cursor: pointer;
+  }}
+
+  /* Subtle broadcast vignette around the pitch edges + click-to-play hint */
+  .pitch-cinema-vignette {{
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(9, 0, 12, 0.42) 0%, transparent 14%, transparent 86%, rgba(9, 0, 12, 0.48) 100%),
+      radial-gradient(circle at center, transparent 68%, rgba(9, 0, 12, 0.52) 100%);
+    z-index: 10;
+  }}
+
+  .pitch-cam-pill {{
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    background: rgba(15, 1, 20, 0.78);
+    border: 1px solid rgba(0, 255, 133, 0.45);
+    color: var(--pl-green);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.9px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    z-index: 15;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+  }}
+
+  .pitch-play-hint {{
+    position: absolute;
+    bottom: 9px;
+    right: 12px;
+    background: rgba(15, 1, 20, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    z-index: 15;
+    pointer-events: none;
   }}
 
   .tv-lower-third {{
@@ -1562,10 +1617,14 @@ html_component = f"""
 
 <div class="main-grid">
   <div class="glass-card">
-    <div class="video-shell">
-      <video id="matchVideo" controls playsinline preload="auto">
+    <!-- PITCH-ONLY CROPPED CINEMA VIEWPORT (NO STADIUM, NO DUGOUTS, NO WATERMARK) -->
+    <div class="video-shell" onclick="togglePlay()" title="Click pitch to Play / Pause">
+      <video id="matchVideo" playsinline preload="auto">
         <source src="data:video/mp4;base64,{video_b64}" type="video/mp4">
       </video>
+      <div class="pitch-cinema-vignette"></div>
+      <div class="pitch-cam-pill">🎯 TACTICAL PITCH-CAM • 60-FPS CV TRACKING</div>
+      <div class="pitch-play-hint" id="pitchPlayHint">🖱️ Click Pitch to Play / Pause</div>
     </div>
 
     <div class="tv-lower-third">
@@ -1810,11 +1869,13 @@ function onManualSelect() {{
 video.addEventListener('play', () => {{
   playBtn.textContent = '⏸️ PAUSE BROADCAST';
   playBtn.style.background = 'linear-gradient(135deg, #facc15 0%, #eab308 100%)';
+  document.getElementById('pitchPlayHint').textContent = '🟢 LIVE STREAMING PITCH FEED';
 }});
 
 video.addEventListener('pause', () => {{
   playBtn.textContent = '▶️ PLAY BROADCAST';
   playBtn.style.background = 'linear-gradient(135deg, #00ff85 0%, #059669 100%)';
+  document.getElementById('pitchPlayHint').textContent = '🖱️ Click Pitch to Play / Pause';
 }});
 
 video.addEventListener('timeupdate', updateUI);
@@ -2301,7 +2362,7 @@ updateUI();
 </html>
 """
 
-components.html(html_component, height=950, scrolling=True)
+components.html(html_component, height=920, scrolling=True)
 
 # ============================================================
 # INTERACTIVE AGENTIC AI TACTICAL COPILOT & OPERATING GUIDE
