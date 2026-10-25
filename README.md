@@ -1,6 +1,21 @@
 # ⚽ MatchMind AI — Explainable Match Intelligence & Multi-Agent Hub
 **Microsoft Premier League Hackathon Submission**
 
+## 🎯 Overview
+MatchMind AI Hub is an end-to-end agentic broadcast intelligence platform built on YOLOv8, BoT-SORT spatial kinematics, Streamlit, and Microsoft AI Foundry (`gpt-4o-mini`). It transforms synthetic football tracking events into explainable match intelligence, real-time narratives, and automated recaps designed for broadcast studios, tactical analysts, and global fans.
+
+---
+
+## 🚀 Live Links
+* **Live Application:** [https://matchmind-ai-premier-league.streamlit.app/](https://matchmind-ai-premier-league.streamlit.app/)
+* **Demo Walkthrough Video:** [https://youtu.be/ILjGcqKt2ME](https://youtu.be/ILjGcqKt2ME)
+
+---
+
+## 🛠️ Tech Stack
+* **AI & Agentic Orchestration:** Microsoft AI Foundry, GitHub Models (`openai/gpt-4o-mini`)
+* **Computer Vision & Telemetry:** YOLOv8, BoT-SORT, Python, NumPy, Pandas
+* **Frontend & Interactive UI:** Streamlit, HTML5 Canvas 2D Digital Twin Pitch Radar, CSS
 ## Overview
 MatchMind AI transforms raw football video and synthetic tracking telemetry into explainable match intelligence, individual player scouting dossiers, and personalized multi-language narratives.
 
