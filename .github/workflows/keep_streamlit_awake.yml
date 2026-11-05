@@ -2,13 +2,15 @@ name: Keep MatchMind AI Streamlit Awake
 
 on:
   schedule:
-    # Runs automatically every 6 hours (at minute 0)
     - cron: "0 */6 * * *"
-  workflow_dispatch: # Allows you to trigger it manually with 1 click
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   wake-app:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,20 +31,27 @@ jobs:
 
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
-              page = browser.new_page()
+              context = browser.new_context(
+                  user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+              )
+              page = context.new_page()
               print(f"Opening {APP_URL} ...")
-              page.goto(APP_URL, wait_until="networkidle", timeout=90000)
-              page.wait_for_timeout(5000)
 
-              # If the app is asleep, click the wake-up button
-              wake_btn = page.locator("button:has-text('Yes, get this app back up!')")
-              if wake_btn.count() > 0:
-                  print("App was sleeping! Clicking wake-up button...")
-                  wake_btn.first.click()
-                  page.wait_for_timeout(25000)
-              else:
-                  print("App is already awake! Holding WebSocket session...")
-                  page.wait_for_timeout(10000)
+              try:
+                  # Use domcontentloaded so Streamlit's active WebSocket doesn't cause a 90s networkidle timeout
+                  page.goto(APP_URL, wait_until="domcontentloaded", timeout=60000)
+                  page.wait_for_timeout(12000)
+
+                  wake_btn = page.locator("button:has-text('Yes, get this app back up!')")
+                  if wake_btn.count() > 0:
+                      print("App was sleeping! Clicking wake-up button...")
+                      wake_btn.first.click()
+                      page.wait_for_timeout(25000)
+                  else:
+                      print("App is awake! Holding WebSocket session...")
+                      page.wait_for_timeout(15000)
+              except Exception as e:
+                  print(f"Non-fatal navigation warning: {e}")
 
               browser.close()
               print("Keep-alive check complete.")
